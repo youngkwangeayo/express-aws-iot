@@ -9,6 +9,7 @@ WORKDIR /app
 # 소스 코드 복사
 COPY ./ ./
 
+RUN apk add --no-cache dumb-init curl ca-certificates openssl
 # 의존성 설치
 # RUN npm ci --only=production
 RUN npm install
@@ -21,8 +22,15 @@ RUN mkdir -p logs
 RUN chmod 600 src/certificate/* && \
     chmod 644 src/certificate/AmazonRootCA1.pem
 
+# node 사용자에게 디렉토리 권한 부여
+RUN chown -R node:node /app
+
+# node 사용자로 전환
+USER node
+
 # # 포트 3000 노출
 # EXPOSE 3000
 
 # 애플리케이션 시작
+ENTRYPOINT ["dumb-init", "--"]
 CMD ["npm", "start"]
