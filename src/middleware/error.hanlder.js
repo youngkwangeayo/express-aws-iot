@@ -12,7 +12,7 @@ const errorHendler = (error, req, res, next) => {
 
   console.log(`[ERROR] [${res.locals.requestId}] ${JSON.stringify(error.stack)}`);
 
-  const apiError = APIError.build().setStatusCode(error.statusCode || 500).setMessage(error.msg || '처리 중 에러가 발생했습니다.');
+  const apiError = APIError.build().setStatusCode(error.statusCode || 500).setMessage(error.message || '처리 중 에러가 발생했습니다.');
   res.statusCode = apiError.statusCode;
   console.log(`[ERROR] [${res.locals.requestId}] Status : ${res.statusCode} / ${JSON.stringify(apiError)}`);
 
