@@ -8,6 +8,7 @@ import errorHendler from './middleware/error.hanlder.js';
 import loggingMiddleware from './middleware/logging.middleware.js';
 import OPENAI from './config/openai.js';
 import translatorAgentRouter from './router/translator-agent.router.js';
+import cmsAgent from './agent/cms-agent/agent.js';
 
 
 const app = express();
@@ -29,7 +30,8 @@ const bootStrep = async () => {
 
     // 여러 init 함수들을 병렬로 실행
     await Promise.all([
-      OPENAI.init(),
+      cmsAgent.init()
+      // OPENAI.init(),
       // otherService.init(),
       // anotherService.init(),
     ]);

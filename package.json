@@ -14,9 +14,11 @@
   "description": "",
   "dependencies": {
     "aws-iot-device-sdk-v2": "^1.23.0",
+    "axios": "^1.13.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^5.2.1",
+    "express-validator": "^7.3.1",
     "openai": "^6.10.0",
     "uuid": "^13.0.0",
     "winston": "^3.17.0"

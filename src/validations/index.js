@@ -1,6 +1,5 @@
-const { validationResult, check, matchedData } = require("express-validator");
-const { APIError } = require("../models/apiResponseModel");
-
+import { validationResult, matchedData} from "express-validator";
+import { APIError } from "../model/apiResponseModel.js";
 
 function validateResultHandler(req, res, next) {
 
@@ -10,7 +9,7 @@ function validateResultHandler(req, res, next) {
         // let message = errors.array();
         const error = APIError.build()
             .setStatusCode(400)
-            .setMsg( JSON.stringify(errors.array()) );
+            .setMessage( errors.array() );
         return next(error);
     };
 
@@ -19,11 +18,4 @@ function validateResultHandler(req, res, next) {
 };
 
 
-const validateFrId = [
-
-    check("frId").isInt().toInt().withMessage("상점아이디를 입력해주세요."),
-    validateResultHandler
-];
-
-
-module.exports = {validateResultHandler, validateFrId};
+export default validateResultHandler;
