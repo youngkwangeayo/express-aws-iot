@@ -9,10 +9,24 @@ const getDateString = () => {
   return now.toISOString().split('T')[0];
 };
 
+// 순환 참조를 안전하게 처리하는 JSON stringify
+const safeStringify = (obj) => {
+  const seen = new WeakSet();
+  return JSON.stringify(obj, (key, value) => {
+    if (typeof value === 'object' && value !== null) {
+      if (seen.has(value)) {
+        return '[Circular]';
+      }
+      seen.add(value);
+    }
+    return value;
+  }, 2);
+};
+
 // 여러 인자를 하나의 문자열로 합치는 헬퍼 함수
 const combineArgs = (...args) => {
   return args.map(arg =>
-    typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+    typeof arg === 'object' ? safeStringify(arg) : String(arg)
   ).join(' ');
 };
 

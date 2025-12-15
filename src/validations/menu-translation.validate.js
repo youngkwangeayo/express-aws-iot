@@ -1,7 +1,7 @@
 import { body, param } from "express-validator";
 import validateResultHandler from "./index.js";
 
-const allowLang = ["en", "jp"];
+const allowLang = ["en", "ja", "de", "zh"];
 
 const validateMenuListTranslation = [
     body("frId")
@@ -9,7 +9,7 @@ const validateMenuListTranslation = [
         .toInt(),
     body("lang")
         .optional().isArray().isIn(allowLang)
-        .default(allowLang).withMessage("lang must be an array is in en,jp "),
+        .default(allowLang).withMessage(`lang must be an array is in ${allowLang} `),
     validateResultHandler
 ];
 
@@ -19,7 +19,7 @@ const validateMenuTranslation = [
         .toInt(),
     param("lang")
         .isString().withMessage("lang must be a string")
-        .isIn(allowLang).withMessage("lang must be either 'en' or 'jp'"),
+        .isIn(allowLang).withMessage(`lang must be either ${allowLang}`),
 
     validateResultHandler
 ];

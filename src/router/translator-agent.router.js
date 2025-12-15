@@ -18,41 +18,46 @@ translatorAgentRouter.get('/health', (req, res) => {
 });
 
 
-translatorAgentRouter.post('/menu-translation', validateMenuListTranslation, (req, res) => {
+translatorAgentRouter.post('/menu-translation', validateMenuListTranslation, async(req, res) => {
     // throw APIError.build().setStatusCode(501).setMessage("Not Implemented");
-    SSEHeader.setHeaders(res);
+    const cookie = req.headers.cookie;
+    const authHeader = req.headers.authorization;
 
-    res.write(`data: [DONE]\n\n`);
+    SSEHeader.setHeaders(res);
+    const sseChunk = SSEChunk.build();
+    res.write(sseChunk.setContent("언어 번역을 시작합니다.").toSSE());
+
+    try {
+        const stream = translatorAgentService.runTranslateMenuProcess(req.matchedData.frId, req.matchedData.lang, cookie, authHeader);
+        for await (const chunkContent of stream) res.write(sseChunk.setContent(chunkContent).toSSE());
+    } catch (error) {
+        debug(error);
+    }
+
+    res.write(sseChunk.setType("end").setFinish(true).toSSE());
     res.end();
 });
 
 
 
 translatorAgentRouter.post('/menu-translation/:lang', validateMenuTranslation, async (req, res,) => {
-    // throw APIError.build().setStatusCode(501).setMessage("Not Implemented");
-    debug(req.matchedData);
-    
     const cookie = req.headers.cookie;
     const authHeader = req.headers.authorization;
 
+    debug(req.matchedData);
+
     SSEHeader.setHeaders(res);
     const sseChunk = SSEChunk.build();
-    res.write( sseChunk.setContent("언어 번역을 시작합니다.").toSSE() );
+    res.write(sseChunk.setContent("언어 번역을 시작합니다.").toSSE());
 
     try {
-        const stream = translatorAgentService.runTranslateMenuProcess( req.matchedData.frId, lang, cookie, authHeader );
-        for await (const chunkContent of stream) res.write( sseChunk.setContent(chunkContent).toSSE() );
+        const stream = translatorAgentService.runTranslateMenuProcess(req.matchedData.frId, req.matchedData.lang, cookie, authHeader);
+        for await (const chunkContent of stream) res.write(sseChunk.setContent(chunkContent).toSSE());
     } catch (error) {
-        
+        debug(error);
     }
 
-    
-    // res.write( sseChunk.setContent("CMS 메뉴 조회 요청 중 입니다.").toSSE() );
-    // await translatorAgentService.callCMSMenu(req.matchedData.frId, lang, cookie, authHeader);
-
-    res.write(`data: ${cookie}\n\n`);
-
-    res.write(`data: [DONE]\n\n`);
+    res.write(sseChunk.setType("end").setFinish(true).toSSE());
     res.end();
 });
 
@@ -86,6 +91,8 @@ translatorAgentRouter.post('/test-post', (req, res) => {
     let test = new APIResopnse();
     res.json(test);
 });
+
+
 
 export default translatorAgentRouter;
 
