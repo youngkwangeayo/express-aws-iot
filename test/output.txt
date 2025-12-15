@@ -1,0 +1,294 @@
+=====================================
+CMS API 테스트 시작
+=====================================
+
+
+[1] 메뉴 테스트
+-------------------------------------
+
+[GET] 메뉴 리스트 조회 (frId: 10107)
+✓ 조회된 메뉴 개수: 3
+처음 2개 메뉴: [ { menuId: 1, menuName: '메뉴 1' }, { menuId: 2, menuName: '메뉴2' } ]
+
+[POST] 메뉴 번역 저장
+Body: [
+  {
+    "menuId": 1,
+    "menuName": "tmp-test1",
+    "locale": "en"
+  },
+  {
+    "menuId": 2,
+    "menuName": "tmp-test2",
+    "locale": "en"
+  }
+]
+✓ 저장 완료: {
+  code: 0,
+  msg: 'success',
+  data: [
+    {
+      idx: 12797,
+      frId: 10107,
+      menuId: 1,
+      locale: 'en',
+      menuName: 'tmp-test1'
+    },
+    {
+      idx: 12826,
+      frId: 10107,
+      menuId: 2,
+      locale: 'en',
+      menuName: 'tmp-test2'
+    }
+  ]
+}
+
+[GET] 메뉴 리스트 조회 - 번역 검증 (frId: 10107)
+✓ 조회된 메뉴 개수: 3
+
+[검증] 저장 후 메뉴 번역 확인:
+메뉴 1: {
+  menuId: 1,
+  menuName: '메뉴 1',
+  MenuTranslation: [
+    {
+      idx: 12830,
+      frId: 10107,
+      menuId: 1,
+      locale: 'de',
+      menuName: 'Menü 1'
+    },
+    {
+      idx: 12797,
+      frId: 10107,
+      menuId: 1,
+      locale: 'en',
+      menuName: 'tmp-test1'
+    },
+    {
+      idx: 12828,
+      frId: 10107,
+      menuId: 1,
+      locale: 'ja',
+      menuName: 'メニュー 1'
+    },
+    {
+      idx: 12603,
+      frId: 10107,
+      menuId: 1,
+      locale: 'ko',
+      menuName: '메뉴 1'
+    },
+    {
+      idx: 12823,
+      frId: 10107,
+      menuId: 1,
+      locale: 'zh',
+      menuName: '菜单 1'
+    }
+  ]
+}
+메뉴 2: {
+  menuId: 2,
+  menuName: '메뉴2',
+  MenuTranslation: [
+    {
+      idx: 12829,
+      frId: 10107,
+      menuId: 2,
+      locale: 'de',
+      menuName: 'Menü 2'
+    },
+    {
+      idx: 12826,
+      frId: 10107,
+      menuId: 2,
+      locale: 'en',
+      menuName: 'tmp-test2'
+    },
+    {
+      idx: 12827,
+      frId: 10107,
+      menuId: 2,
+      locale: 'ja',
+      menuName: 'メニュー2'
+    },
+    {
+      idx: 12604,
+      frId: 10107,
+      menuId: 2,
+      locale: 'ko',
+      menuName: '메뉴2'
+    },
+    {
+      idx: 12824,
+      frId: 10107,
+      menuId: 2,
+      locale: 'zh',
+      menuName: '菜单2'
+    }
+  ]
+}
+
+
+[2] 카테고리 테스트
+-------------------------------------
+
+[GET] 카테고리 리스트 조회 (frId: 10107)
+✓ 조회된 카테고리 개수: 13
+처음 2개 카테고리: [
+  { categoryId: 172385, categoryName: '1L', categoryInfo: '' },
+  { categoryId: 174521, categoryName: '[감성할인]', categoryInfo: '' }
+]
+
+[POST] 카테고리 번역 저장
+Body: [
+  {
+    "categoryId": 172385,
+    "categoryName": "tmp-test1",
+    "categoryInfo": "tmp-test1",
+    "locale": "en"
+  },
+  {
+    "categoryId": 174521,
+    "categoryName": "tmp-test2",
+    "categoryInfo": "tmp-test2",
+    "locale": "en"
+  }
+]
+✓ 저장 완료: {
+  code: 0,
+  msg: 'success',
+  data: [
+    {
+      idx: 14255,
+      categoryId: 172385,
+      locale: 'en',
+      categoryName: 'tmp-test1',
+      categoryInfo: 'tmp-test1'
+    },
+    {
+      idx: 14271,
+      categoryId: 174521,
+      locale: 'en',
+      categoryName: 'tmp-test2',
+      categoryInfo: 'tmp-test2'
+    }
+  ]
+}
+
+[GET] 카테고리 리스트 조회 - 번역 검증 (frId: 10107)
+✓ 조회된 카테고리 개수: 13
+
+[검증] 저장 후 카테고리 번역 확인:
+카테고리 1: {
+  categoryId: 172385,
+  categoryName: '1L',
+  CategoryTranslation: [
+    {
+      idx: 14255,
+      categoryId: 172385,
+      locale: 'en',
+      categoryName: 'tmp-test1',
+      categoryInfo: 'tmp-test1'
+    },
+    {
+      idx: 11496,
+      categoryId: 172385,
+      locale: 'ko',
+      categoryName: '1L',
+      categoryInfo: ''
+    }
+  ]
+}
+카테고리 2: {
+  categoryId: 174521,
+  categoryName: '[감성할인]',
+  CategoryTranslation: [
+    {
+      idx: 14271,
+      categoryId: 174521,
+      locale: 'en',
+      categoryName: 'tmp-test2',
+      categoryInfo: 'tmp-test2'
+    },
+    {
+      idx: 12744,
+      categoryId: 174521,
+      locale: 'ko',
+      categoryName: '[감성할인]',
+      categoryInfo: ''
+    }
+  ]
+}
+
+
+[3] 상품 테스트
+-------------------------------------
+
+[GET] 상품 리스트 조회 (frId: 10107)
+✓ 조회된 상품 개수: 100
+처음 2개 상품: [
+  { productId: 4595194, productName: '(행사) 815체리콕', productInfo: '' },
+  { productId: 4595169, productName: '(행사) 듬뿍딸기밀크쉐킷', productInfo: '' }
+]
+
+[POST] 상품 번역 저장
+Body: [
+  {
+    "productId": 4595194,
+    "productName": "tmp-test1",
+    "productInfo": "tmp-test1",
+    "locale": "en"
+  },
+  {
+    "productId": 4595169,
+    "productName": "tmp-test2",
+    "productInfo": "tmp-test2",
+    "locale": "en"
+  }
+]
+✓ 저장 완료: {
+  code: 0,
+  msg: 'success',
+  data: [
+    {
+      idx: 71528,
+      productId: 4595194,
+      locale: 'en',
+      productName: 'tmp-test1',
+      printName: null,
+      productInfo: 'tmp-test1'
+    },
+    {
+      idx: 71529,
+      productId: 4595169,
+      locale: 'en',
+      productName: 'tmp-test2',
+      printName: null,
+      productInfo: 'tmp-test2'
+    }
+  ]
+}
+
+[GET] 상품 리스트 조회 - 번역 검증 (frId: 10107)
+✓ 조회된 상품 개수: 100
+
+[검증] 저장 후 상품 번역 확인:
+상품 1: {
+  productId: 4595194,
+  productName: '(행사) 815체리콕',
+  ProductTranslation: undefined
+}
+상품 2: {
+  productId: 4595169,
+  productName: '(행사) 듬뿍딸기밀크쉐킷',
+  ProductTranslation: undefined
+}
+
+
+=====================================
+✓ 모든 테스트 완료
+=====================================
+

@@ -32,23 +32,23 @@ async function* runTranslateMenuProcess(frId, lang, cookie, authHeader) {
 
     let p1Result, p2Result, p3Result;
     const taskGetMenu = cmsWebClient.getMenuList(frId, lang, cookie, authHeader).then(r => p1Result = r).catch(err => console.error("task1 error:", err));
-    const taskGetCategory = cmsWebClient.getCategoryList().then(r => p2Result = r).catch(err => console.error("task1 error:", err));
-    const taskGetProduct = cmsWebClient.getProductList().then(r => p3Result = r).catch(err => console.error("task1 error:", err));
+    const taskGetCategory = cmsWebClient.getCategoryList(frId, lang, cookie, authHeader).then(r => p2Result = r).catch(err => console.error("task1 error:", err));
+    const taskGetProduct = cmsWebClient.getProductList(frId, lang, cookie, authHeader).then(r => p3Result = r).catch(err => console.error("task1 error:", err));
 
     await Promise.allSettled([taskGetMenu, taskGetCategory, taskGetProduct]);
     yield "번역 작업에 돌입합니다.";
     
     let resultP1, resultP2, resultP3;
     const taskTranslateMenu = cmsAgent.translateJSON(p1Result, lang).then(r => resultP1 = r).catch(err => console.error("task1 error:", err));
-    const taskTranslatCategory = cmsAgent.translateJSON(p2Result).then(r => resultP2 = r).catch(err => console.error("task1 error:", err));
-    const taskTranslateProduct = cmsAgent.translateJSON(p3Result).then(r => resultP3 = r).catch(err => console.error("task1 error:", err));
+    const taskTranslatCategory = cmsAgent.translateJSON(p2Result, lang).then(r => resultP2 = r).catch(err => console.error("task1 error:", err));
+    const taskTranslateProduct = cmsAgent.translateJSON(p3Result, lang).then(r => resultP3 = r).catch(err => console.error("task1 error:", err));
 
     await Promise.allSettled([taskTranslateMenu, taskTranslatCategory, taskTranslateProduct]);
     yield `번역 완료하였습니다. ${lang} 메뉴를 저장합니다.`;
 
     const taskPostMenu = cmsWebClient.postMenuTranslationList(frId, resultP1, cookie, authHeader).then(r => p1Result = r).catch(err => console.error("task1 error:", err));
-    const taskPostCategory = cmsWebClient.postMenuTranslationList(frId, resultP1, cookie, authHeader).then(r => p2Result = r).catch(err => console.error("task1 error:", err));
-    const taskPostProduct = cmsWebClient.postMenuTranslationList(frId, resultP1, cookie, authHeader).then(r => p3Result = r).catch(err => console.error("task1 error:", err));
+    const taskPostCategory = cmsWebClient.postCategoryTranslationList(frId, resultP2, cookie, authHeader).then(r => p2Result = r).catch(err => console.error("task1 error:", err));
+    const taskPostProduct = cmsWebClient.postProductTranslationList(frId, resultP3, cookie, authHeader).then(r => p3Result = r).catch(err => console.error("task1 error:", err));
 
     await Promise.allSettled( [taskPostMenu, taskPostCategory, taskPostProduct] );
     yield `${lang}다국어 메뉴 저장 완료하였습니다.`;
@@ -56,34 +56,62 @@ async function* runTranslateMenuProcess(frId, lang, cookie, authHeader) {
 
 
 
-async function* runMultipleTranslateMenuProcess(frId, lang, cookie, authHeader) {
+async function* runMultipleTranslateMenuProcess(frId, langs, cookie, authHeader) {
 
     yield "cms에서 menu정보를 불러오고있습니다.";
 
-    let p1Result, p2Result, p3Result;
-    const taskGetMenu = cmsWebClient.getMenuList(frId, lang, cookie, authHeader).then(r => p1Result = r).catch(err => console.error("task1 error:", err));
-    const taskGetCategory = cmsWebClient.getCategoryList().then(r => p2Result = r).catch(err => console.error("task1 error:", err));
-    const taskGetProduct = cmsWebClient.getProductList().then(r => p3Result = r).catch(err => console.error("task1 error:", err));
+    // 1. 원본 데이터를 1번만 병렬로 가져오기
+    let menuData, categoryData, productData;
+    const taskGetMenu = cmsWebClient.getMenuList(frId, langs[0], cookie, authHeader).then(r => menuData = r).catch(err => console.error("getMenu error:", err));
+    const taskGetCategory = cmsWebClient.getCategoryList().then(r => categoryData = r).catch(err => console.error("getCategory error:", err));
+    const taskGetProduct = cmsWebClient.getProductList().then(r => productData = r).catch(err => console.error("getProduct error:", err));
 
     await Promise.allSettled([taskGetMenu, taskGetCategory, taskGetProduct]);
-    yield "번역 작업에 돌입합니다.";
-    
-    // for( lang)
-    
-    let resultP1, resultP2, resultP3;
-    const taskTranslateMenu = cmsAgent.translateJSON(p1Result, lang).then(r => resultP1 = r).catch(err => console.error("task1 error:", err));
-    const taskTranslatCategory = cmsAgent.translateJSON(p2Result).then(r => resultP2 = r).catch(err => console.error("task1 error:", err));
-    const taskTranslateProduct = cmsAgent.translateJSON(p3Result).then(r => resultP3 = r).catch(err => console.error("task1 error:", err));
+    yield `번역 작업에 돌입합니다. (${langs.length}개 언어: ${langs.join(', ')})`;
 
-    await Promise.allSettled([taskTranslateMenu, taskTranslatCategory, taskTranslateProduct]);
-    yield `번역 완료하였습니다. ${lang} 메뉴를 저장합니다.`;
+    // 2. 각 언어별로 메뉴, 카테고리, 프로덕트 번역을 병렬로 실행
+    const translationResults = {};
+    const translationTasks = [];
 
-    const taskPostMenu = cmsWebClient.postMenuTranslationList(frId, resultP1, cookie, authHeader).then(r => p1Result = r).catch(err => console.error("task1 error:", err));
-    const taskPostCategory = cmsWebClient.postMenuTranslationList(frId, resultP1, cookie, authHeader).then(r => p2Result = r).catch(err => console.error("task1 error:", err));
-    const taskPostProduct = cmsWebClient.postMenuTranslationList(frId, resultP1, cookie, authHeader).then(r => p3Result = r).catch(err => console.error("task1 error:", err));
+    for (const lang of langs) {
+        translationResults[lang] = {};
 
-    await Promise.allSettled( [taskPostMenu, taskPostCategory, taskPostProduct] );
-    yield `${lang}다국어 메뉴 저장 완료하였습니다.`;
+        const menuTask = cmsAgent.translateJSON(menuData, lang)
+            .then(r => translationResults[lang].menu = r)
+            .catch(err => console.error(`translateMenu ${lang} error:`, err));
+
+        const categoryTask = cmsAgent.translateJSON(categoryData, lang)
+            .then(r => translationResults[lang].category = r)
+            .catch(err => console.error(`translateCategory ${lang} error:`, err));
+
+        const productTask = cmsAgent.translateJSON(productData, lang)
+            .then(r => translationResults[lang].product = r)
+            .catch(err => console.error(`translateProduct ${lang} error:`, err));
+
+        translationTasks.push(menuTask, categoryTask, productTask);
+    }
+
+    await Promise.allSettled(translationTasks);
+    yield `번역 완료하였습니다. (총 ${translationTasks.length}개 작업) ${langs.join(', ')} 언어의 메뉴를 저장합니다.`;
+
+    // 3. 각 언어별로 저장 작업을 병렬로 실행
+    const saveTasks = [];
+
+    for (const lang of langs) {
+        const menuSaveTask = cmsWebClient.postMenuTranslationList(frId, translationResults[lang].menu, cookie, authHeader)
+            .catch(err => console.error(`saveMenu ${lang} error:`, err));
+
+        const categorySaveTask = cmsWebClient.postMenuTranslationList(frId, translationResults[lang].category, cookie, authHeader)
+            .catch(err => console.error(`saveCategory ${lang} error:`, err));
+
+        const productSaveTask = cmsWebClient.postMenuTranslationList(frId, translationResults[lang].product, cookie, authHeader)
+            .catch(err => console.error(`saveProduct ${lang} error:`, err));
+
+        saveTasks.push(menuSaveTask, categorySaveTask, productSaveTask);
+    }
+
+    await Promise.allSettled(saveTasks);
+    yield `${langs.join(', ')} 다국어 메뉴 저장 완료하였습니다. (총 ${saveTasks.length}개 작업)`;
 };
 
 
@@ -91,6 +119,7 @@ async function* runMultipleTranslateMenuProcess(frId, lang, cookie, authHeader) 
 const translatorAgentService = {
     testStream,
     runTranslateMenuProcess,
+    runMultipleTranslateMenuProcess,
 };
 
 export default translatorAgentService;
