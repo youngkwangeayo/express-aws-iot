@@ -19,7 +19,7 @@ translatorAgentRouter.get('/health', (req, res) => {
 
 
 translatorAgentRouter.post('/menu-translation', validateMenuListTranslation, async(req, res) => {
-    // throw APIError.build().setStatusCode(501).setMessage("Not Implemented");
+    throw APIError.build().setStatusCode(501).setMessage("Not Implemented");
     const cookie = req.headers.cookie;
     const authHeader = req.headers.authorization;
 
@@ -92,6 +92,26 @@ translatorAgentRouter.post('/test-post', (req, res) => {
     res.json(test);
 });
 
+translatorAgentRouter.get('/test-sse/menu-translation/:lang', validateMenuTranslation, async (req, res,) => {
+    const cookie = req.headers.cookie;
+    const authHeader = req.headers.authorization;
+
+    debug(req.matchedData);
+
+    SSEHeader.setHeaders(res);
+    const sseChunk = SSEChunk.build();
+    res.write(sseChunk.setContent("언어 번역을 시작합니다.").toSSE());
+
+    try {
+        const stream = translatorAgentService.runTranslateMenuProcess(req.matchedData.frId, req.matchedData.lang, cookie, authHeader);
+        for await (const chunkContent of stream) res.write(sseChunk.setContent(chunkContent).toSSE());
+    } catch (error) {
+        debug(error);
+    }
+
+    res.write(sseChunk.setType("end").setFinish(true).toSSE());
+    res.end();
+});
 
 
 export default translatorAgentRouter;

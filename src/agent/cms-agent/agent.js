@@ -52,47 +52,24 @@ class CMSagent {
         return result;
     };
 
-    // translateJSONToStream2 = async function* (originalJson = "", lang) {
 
-    //     const response = await this.#client.chat.completions.create({
-    //         model: "gpt-4.1",
-    //         temperature: 0,
-    //         stream: true,
-    //         messages: [
-    //             { role: "system", content: MENU_TRANSLATION_PROMPT },
-    //             { role: "user", content: `Translate this JSON to ${lang}:\n\n${JSON.stringify(originalJson, null, 2)}` },
-    //         ],
-    //     });
-    //     const stream = response.choices[0].message.content;
-    //     for await (const chunk of stream) {
-    //         yield content = chunk.choices[0]?.delta?.content || "";
-    //     };
-    // };
-
-
-    translateJSONToStream = async function* (originalJson = "", lang) {
+    translateJSONStream = async function(originalJson = "", lang) {
 
         const response = await this.#client.responses.create({
             model: "gpt-4.1",
             instructions: MENU_TRANSLATION_PROMPT,
-            temperature: 0,
             stream: true,
+            temperature: 0,
             input: [
                 { role: "user", content: `Translate this JSON to ${lang}:` },
                 { role: "user", content: JSON.stringify(originalJson, null, 2) }
             ]
 
         });
-        for await (const event of response) {
-            // Responses API 스트리밍 텍스트 추출
-            // const text = event?.output_text ?? "";
-            yield event;
-            // if (text) {
-            //     yield text;
-            // }
-        }
+        if( response.error ) throw new Error("일단 에이전트 에러");
 
-
+        // response 는 async iterator(ReadableStream 형태)
+        return response;
     };
 
 };
