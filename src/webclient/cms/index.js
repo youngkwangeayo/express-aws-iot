@@ -23,7 +23,7 @@ async function getMenuList(frId, cookie, authHeader) {
         menuId: item.menuId,
         menuName: item.menuName,
     }));
-    debug(result);
+    debug("get menu",JSON.stringify(result).substring(0,30));
     return result;
 };
 
@@ -40,7 +40,7 @@ async function getCategoryList(frId, cookie, authHeader) {
         categoryName: item.categoryName,
         categoryInfo: item.categoryInfo
     }));
-    debug(result);
+    debug("get category",JSON.stringify(result).substring(0,30));
     return result;
 };
 
@@ -57,7 +57,7 @@ async function getProductList(frId, cookie, authHeader) {
         productName: item.productName,
         productInfo: item.productInfo
     }));
-    debug(result);
+     debug("get product",JSON.stringify(result).substring(0,30));
     return result;
 };
 

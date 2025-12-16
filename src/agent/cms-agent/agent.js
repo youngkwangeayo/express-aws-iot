@@ -32,7 +32,7 @@ class CMSagent {
     };
 
     async translateJSON(originalJson = "", lang) {
-        debug(originalJson , lang);
+        debug(JSON.stringify(originalJson).substring(0,30) , lang);
 
        const response = await this.#client.responses.create({
             model: "gpt-4.1",
@@ -44,7 +44,7 @@ class CMSagent {
             ]
 
         });
-        debug(response.output_text, typeof response.output_text);
+        debug("AGENT RETUEN : ",JSON.stringify(response.output_text).substring(0,30), typeof (response.output_text).substring(0,30));
 
         if( response.error ) throw new Error("일단 에이전트 에러");
         
