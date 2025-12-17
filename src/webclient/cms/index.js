@@ -4,13 +4,13 @@ import { debug } from "../../config/logger.js";
 
 
 async function getMenuList(frId, cookie, authHeader) {
-    debug(` 요청 : https://dev-cms.nextpay.co.kr/menu/v1/getMenuList?frId=${frId}`, {
-        headers: {
-            Authorization: authHeader,
-            Cookie: cookie,
-        }
-    }
-    );
+    // debug(` 요청 : https://dev-cms.nextpay.co.kr/menu/v1/getMenuList?frId=${frId}`, {
+    //     headers: {
+    //         Authorization: authHeader,
+    //         Cookie: cookie,
+    //     }
+    // }
+    // );
 
     let sample = await axios.get(`https://dev-cms.nextpay.co.kr/menu/v1/getMenuList?frId=${frId}`, {
         headers: {
@@ -23,7 +23,7 @@ async function getMenuList(frId, cookie, authHeader) {
         menuId: item.menuId,
         menuName: item.menuName,
     }));
-    debug("get menu",JSON.stringify(result).substring(0,30));
+    // debug("get menu",JSON.stringify(result).substring(0,30));
     return result;
 };
 
@@ -40,7 +40,7 @@ async function getCategoryList(frId, cookie, authHeader) {
         categoryName: item.categoryName,
         categoryInfo: item.categoryInfo
     }));
-    debug("get category",JSON.stringify(result).substring(0,30));
+    // debug("get category",JSON.stringify(result).substring(0,30));
     return result;
 };
 
@@ -57,7 +57,7 @@ async function getProductList(frId, cookie, authHeader) {
         productName: item.productName,
         productInfo: item.productInfo
     }));
-     debug("get product",JSON.stringify(result).substring(0,30));
+    //  debug("get product",JSON.stringify(result).substring(0,30));
     return result;
 };
 

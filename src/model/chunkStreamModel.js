@@ -1,53 +1,50 @@
-
-class SSEHeader {
+class ChunkedStreamHeader {
     /**
-     * SSE (Server-Sent Events) 헤더를 response 객체에 설정
+     * Chunk Streaming용 헤더 설정
+     * SSE와 달리 text/event-stream이 아니라 JSON/플레인 텍스트 기반
      * @param {import("express").Response} res - Express response 객체
      */
     static setHeaders(res) {
-        res.setHeader("Content-Type", "text/event-stream");
-        res.setHeader("Cache-Control", "no-cache");
+        res.setHeader("Content-Type", "application/json; charset=utf-8");
+        res.setHeader("Transfer-Encoding", "chunked");
         res.setHeader("Connection", "keep-alive");
         res.flushHeaders();
         return res;
     }
 
     /**
-     * SSE 형식으로 데이터 전송
-     * @param {Object} res - Express response 객체
-     * @param {Object} data - 전송할 데이터
-     * @param {string} event - 이벤트 이름 (선택사항)
+     * JSON chunk 전송
      */
-    static send(res, data, event = null) {
-        if (event) {
-            res.write(`event: ${event}\n`);
-        }
-        res.write(`data: ${JSON.stringify(data)}\n\n`);
+    static send(res, chunkModel) {
+        res.write(chunkModel.serialize());
     }
 
     /**
-     * SSE 연결 종료
-     * @param {Object} res - Express response 객체
+     * 스트림 종료
      */
-    static close(res) {
+    static close(res, endMeta = null) {
+        const endChunk = new ChunkedChunk("")
+            .setType("end")
+            .setFinish(true)
+            .setMeta(endMeta);
+
+        res.write(endChunk.serialize());
         res.end();
     }
-};
+}
 
-
-class SSEChunk {
+class ChunkedChunk {
     constructor(content) {
         this.id = `chunk_${Date.now()}`;
         this.timestamp = Date.now();
-        this.type = "chunk";      // chunk | end | error
-        this.content = content;   // 스트리밍되는 텍스트
-        this.meta = null;         // 필요 시 추가 정보
-        this.finish = false;      // 마지막 청크 여부
+        this.type = "chunk";  // chunk | end | error
+        this.content = content;
+        this.meta = null;
+        this.finish = false;
     }
 
-    // 정적 빌더
     static build(content) {
-        return new SSEChunk(content);
+        return new ChunkedChunk(content);
     }
 
     setId(value) { this.id = value; return this; }
@@ -56,12 +53,67 @@ class SSEChunk {
     setMeta(value) { this.meta = value; return this; }
     setFinish(value) { this.finish = value; return this; }
 
-    // SSE로 전송 가능한 문자열로 변환
-    toSSE() {
-        return `data: ${JSON.stringify(this)}\n\n`;
+    /**
+     * 순수 Chunk Streaming용 직렬화
+     * SSE 포맷이 아니라 JSON + newline으로만 구성됨
+     * ex) {"chunk":"hello"}\n
+     */
+    serialize() {
+        return JSON.stringify(this) + "\n";
     }
+
 }
 
 
+class ChunkResponse {
+    
+    /** @type {import("express").Response} */
+    #res = null;
+    /**
+     * 
+     * @param {import("express").Response} res 
+     * @param {string} content 
+     */
+    constructor(res, content) {
+        this.id = `chunk_${Date.now()}`;
+        this.timestamp = Date.now();
+        this.type = "chunk";  // chunk | end | error
+        this.content = content ?? "";
+        this.meta = null;
+        this.finish = false;
 
-export { SSEHeader, SSEChunk }
+        this.#res = res;
+    }
+
+    static build(res, content) {
+        return new ChunkResponse(res, content);
+    }
+
+    setId(value) { this.id = value; return this; }
+    setType(value) { this.type = value; return this; }
+    setContent(value) { this.content = value; return this; }
+    setMeta(value) { this.meta = value; return this; }
+    setFinish(value) { this.finish = value; return this; }
+
+    setRes(value) {this.#res = value; return this; }
+
+    /**
+     * 순수 Chunk Streaming용 직렬화
+     * SSE 포맷이 아니라 JSON + newline으로만 구성됨
+     * ex) {"chunk":"hello"}\n
+     */
+    serialize() {
+        return JSON.stringify(this) + "\n";
+    };
+
+
+    resWrite = (content) => {
+        this.setContent(content);
+        this.#res.write( this.serialize() );
+    };
+
+   
+}
+
+
+export { ChunkedChunk, ChunkedStreamHeader, ChunkResponse };

@@ -14,7 +14,28 @@ import cmsAgent from './agent/cms-agent/agent.js';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// CORS 설정 - 특정 도메인만 허용하는 경우
+// const corsOptions = {
+//   origin: function (origin, callback) {
+//     const allowedOrigins = [
+//       'https://a.example.com',
+//       'https://b.example.com'
+//     ];
+//     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error('Not allowed by CORS'));
+//     }
+//   },
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization']
+// };
+// app.use(cors(corsOptions));
+
+// CORS 설정 - 모든 도메인 허용
 app.use(cors());
+
 app.use(express.json());
 
 app.use(loggingMiddleware);

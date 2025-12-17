@@ -1,6 +1,8 @@
 import OpenAI from "openai";
 import { MENU_TRANSLATION_PROMPT } from "./prompt.js";
 import { debug } from "../../config/logger.js";
+import fs from "fs/promises";
+import path from "path";
 
 /*
 모델명	설명
@@ -32,9 +34,9 @@ class CMSagent {
     };
 
     async translateJSON(originalJson = "", lang) {
-        debug(JSON.stringify(originalJson).substring(0,30) , lang);
+        debug(JSON.stringify(originalJson).substring(0, 30), lang);
 
-       const response = await this.#client.responses.create({
+        const response = await this.#client.responses.create({
             model: "gpt-4.1",
             instructions: MENU_TRANSLATION_PROMPT,
             temperature: 0,
@@ -44,16 +46,16 @@ class CMSagent {
             ]
 
         });
-        debug("AGENT RETUEN : ",JSON.stringify(response.output_text).substring(0,30), typeof (response.output_text).substring(0,30));
+        debug("AGENT RETUEN : ", JSON.stringify(response.output_text).substring(0, 30), typeof (response.output_text).substring(0, 30));
 
-        if( response.error ) throw new Error("일단 에이전트 에러");
-        
+        if (response.error) throw new Error("일단 에이전트 에러");
+
         const result = JSON.parse(response.output_text);
         return result;
     };
 
 
-    translateJSONStream = async function(originalJson = "", lang) {
+    translateJSONStream = async function (originalJson = "", lang) {
 
         const response = await this.#client.responses.create({
             model: "gpt-4.1",
@@ -66,10 +68,28 @@ class CMSagent {
             ]
 
         });
-        if( response.error ) throw new Error("일단 에이전트 에러");
+        if (response.error) throw new Error("일단 에이전트 에러");
 
         // response 는 async iterator(ReadableStream 형태)
-        return response;
+        let fullText = "";
+
+        // 타임스탬프로 고유한 파일명 생성
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const outputDir = path.join(process.cwd(), 'logs', 'stream-output');
+        await fs.mkdir(outputDir, { recursive: true });
+        const filePath = path.join(outputDir, `stream-${timestamp}.txt`);
+
+        for await (const event of response) {
+
+            const chunk = "\n >> " + JSON.stringify(event);
+            fullText += event.output_text;
+            // 파일에 실시간으로 추가
+            await fs.appendFile(filePath, chunk, 'utf-8');
+        }
+
+        debug("Stream output saved to:", filePath);
+        fs.appendFile(path.join(outputDir, `res.txt`),fullText,"utf-8");
+        return fullText;
     };
 
 };
