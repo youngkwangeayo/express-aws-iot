@@ -51,6 +51,8 @@ class CMSagent {
         if (response.error) throw new Error("일단 에이전트 에러");
 
         const result = JSON.parse(response.output_text);
+
+        debug("=============요청 개수 ", originalJson.length, "=======응답 개수 ", result.length);
         return result;
     };
 

@@ -79,7 +79,7 @@ async function postMenuTranslationList(frId, body, cookie, authHeader) {
             }
         }
     );
-    debug(result);
+    // debug(result);
 };
 async function postCategoryTranslationList(frId, body, cookie, authHeader) {
     // body 배열의 각 객체에 frId 추가
@@ -97,7 +97,7 @@ async function postCategoryTranslationList(frId, body, cookie, authHeader) {
             }
         }
     );
-    debug(result);
+    // debug(result);
 };
 async function postProductTranslationList(frId, body, cookie, authHeader) {
     // body 배열의 각 객체에 frId 추가
@@ -115,7 +115,7 @@ async function postProductTranslationList(frId, body, cookie, authHeader) {
             }
         }
     );
-    debug(result);
+    // debug(result);
 };
 
 const cmsWebClient = {

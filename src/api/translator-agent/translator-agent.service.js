@@ -1,9 +1,9 @@
 import axios from "axios";
-import logger from "../config/logger.js";
-import { debug } from "../config/logger.js";
-import cmsAgent from "../agent/cms-agent/agent.js";
-import cmsWebClient from "../webclient/cms/index.js";
-import { APIError } from "../model/apiResponseModel.js";
+import logger from "../../config/logger.js";
+import { debug } from "../../config/logger.js";
+import cmsAgent from "../../agent/cms-agent/agent.js";
+import cmsWebClient from "../../webclient/cms/index.js";
+import { APIError } from "../../model/apiResponseModel.js";
 
 /**
  * 텍스트 스트림 생성 (테스트용)
@@ -94,7 +94,7 @@ async function translateCategory(frId, lang, cookie, authHeader, resWrite) {
     const taskResoult_transCategory = await cmsAgent.translateJSON(taskResult_category, lang);
     resWrite("AI가 카테고리 번역을 완료 하였습니다.");
 
-    const taskResult_SaveCategoryResult = cmsWebClient.postMenuTranslationList(frId, taskResoult_transCategory, cookie, authHeader);
+    const taskResult_SaveCategoryResult = await cmsWebClient.postMenuTranslationList(frId, taskResoult_transCategory, cookie, authHeader);
     resWrite("CMS에서 카테고리 저장 완료.");
 
     debug("===translateCategory DONE ");
@@ -107,10 +107,10 @@ async function translateProduct(frId, lang, cookie, authHeader, resWrite) {
     const taskResult_product = await cmsWebClient.getProductList(frId, lang, cookie, authHeader);
 
     resWrite("AI가 상품 번역 시작합니다.");
-    const translationPromise = await cmsAgent.translateJSON(taskResult_product, lang);
+    const taskResoult_transProduct = await cmsAgent.translateJSON(taskResult_product, lang);
     resWrite("AI가 상품 번역을 완료 하였습니다.");
 
-    const taskResult_SaveProductResult = cmsWebClient.postMenuTranslationList(frId, translationResult, cookie, authHeader);
+    const taskResult_SaveProductResult = await cmsWebClient.postMenuTranslationList(frId, taskResoult_transProduct, cookie, authHeader);
     resWrite("CMS에서 상품 저장 완료.");
 
     debug("===translateProduct DONE ");

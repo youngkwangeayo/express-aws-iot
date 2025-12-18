@@ -3,12 +3,14 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import logger  from './config/logger.js';
-import systemRouter from './router/system.router.js';
+import systemRouter from './api/system.router.js';
 import errorHendler from './middleware/error.hanlder.js';
 import loggingMiddleware from './middleware/logging.middleware.js';
 import OPENAI from './config/openai.js';
-import translatorAgentRouter from './router/translator-agent.router.js';
+import translatorAgentRouter from './api/translator-agent/translator-agent.router.js';
+
 import cmsAgent from './agent/cms-agent/agent.js';
+import translatorAgentStreamRouter from './api/translator-agent/translator-agent.stream.router.js';
 
 
 const app = express();
@@ -42,6 +44,7 @@ app.use(loggingMiddleware);
 
 app.use(systemRouter);
 app.use("/translator-agent",translatorAgentRouter)//translator-agent
+app.use("/translator-agent",translatorAgentStreamRouter)//translator-agent
 app.use(errorHendler);
 
 

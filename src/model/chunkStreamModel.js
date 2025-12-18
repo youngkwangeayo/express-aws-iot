@@ -95,7 +95,7 @@ class ChunkResponse {
     setMeta(value) { this.meta = value; return this; }
     setFinish(value) { this.finish = value; return this; }
 
-    setRes(value) {this.#res = value; return this; }
+    setRes(value) { this.#res = value; return this; }
 
     /**
      * 순수 Chunk Streaming용 직렬화
@@ -109,10 +109,23 @@ class ChunkResponse {
 
     resWrite = (content) => {
         this.setContent(content);
-        this.#res.write( this.serialize() );
+        this.#res.write(this.serialize());
     };
 
-   
+    resEnd = () => {
+        this.setType("end");
+        this.setFinish(true);
+        this.#res.write(this.serialize());
+        this.#res.end();
+    };
+
+    resError = (content) => {
+        this.setContent(content);
+        this.setType("error");
+        this.setFinish(true);
+        this.#res.write(this.serialize());
+        this.#res.end();
+    };
 }
 
 

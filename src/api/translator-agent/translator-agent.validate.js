@@ -1,5 +1,5 @@
 import { body, param } from "express-validator";
-import validateResultHandler from "./index.js";
+import validateResultHandler from "../../middleware/validation.handler.js";
 
 const allowLang = ["en", "ja", "de", "zh"];
 
