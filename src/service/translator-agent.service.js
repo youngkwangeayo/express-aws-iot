@@ -107,10 +107,10 @@ async function translateProduct(frId, lang, cookie, authHeader, resWrite) {
     const taskResult_product = await cmsWebClient.getProductList(frId, lang, cookie, authHeader);
 
     resWrite("AI가 상품 번역 시작합니다.");
-    const translationPromise = await cmsAgent.translateJSON(taskResult_product, lang);
+    const taskResoult_transProduct = await cmsAgent.translateJSON(taskResult_product, lang);
     resWrite("AI가 상품 번역을 완료 하였습니다.");
 
-    const taskResult_SaveProductResult = cmsWebClient.postMenuTranslationList(frId, translationResult, cookie, authHeader);
+    const taskResult_SaveProductResult = await cmsWebClient.postMenuTranslationList(frId, taskResoult_transProduct, cookie, authHeader);
     resWrite("CMS에서 상품 저장 완료.");
 
     debug("===translateProduct DONE ");
