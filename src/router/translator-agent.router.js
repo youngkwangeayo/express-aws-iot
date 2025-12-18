@@ -55,13 +55,11 @@ translatorAgentRouter.post('/menu-translation/:lang', validateMenuTranslation, a
 
     try {
         await translatorAgentService.runTranslateMenuProcess(req.matchedData.frId, req.matchedData.lang, cookie, authHeader, streamChunk.resWrite);
-        // for await (const chunkContent of stream) res.write(streamChunk.setContent(chunkContent).serialize());
     } catch (error) {
         debug(error);
-    }
-
-    res.write(streamChunk.setType("end").setFinish(true).serialize());
-    res.end();
+        return streamChunk.resError(error.message);
+    };
+    return streamChunk.resEnd();
 });
 
 /**
