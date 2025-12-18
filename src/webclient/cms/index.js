@@ -2,9 +2,10 @@ import axios from "axios";
 import { debug } from "../../config/logger.js";
 
 
+const CMS_API = process.env.CMS_API_ADDR;
 
 async function getMenuList(frId, cookie, authHeader) {
-    // debug(` 요청 : https://dev-cms.nextpay.co.kr/menu/v1/getMenuList?frId=${frId}`, {
+    // debug(` 요청 : ${CMS_API}/menu/v1/getMenuList?frId=${frId}`, {
     //     headers: {
     //         Authorization: authHeader,
     //         Cookie: cookie,
@@ -12,7 +13,7 @@ async function getMenuList(frId, cookie, authHeader) {
     // }
     // );
 
-    let sample = await axios.get(`https://dev-cms.nextpay.co.kr/menu/v1/getMenuList?frId=${frId}`, {
+    let sample = await axios.get(`${CMS_API}/menu/v1/getMenuList?frId=${frId}`, {
         headers: {
             Authorization: authHeader, // 그대로 전달
             Cookie: cookie,      // 문자열로 변환 후 전달
@@ -29,7 +30,7 @@ async function getMenuList(frId, cookie, authHeader) {
 
 async function getCategoryList(frId, cookie, authHeader) {
 
-    let sample = await axios.get(`https://dev-cms.nextpay.co.kr/menu/v1/getCategoryList?frId=${frId}`, {
+    let sample = await axios.get(`${CMS_API}/menu/v1/getCategoryList?frId=${frId}`, {
         headers: {
             Authorization: authHeader, // 그대로 전달
             Cookie: cookie,      // 문자열로 변환 후 전달
@@ -46,7 +47,7 @@ async function getCategoryList(frId, cookie, authHeader) {
 
 async function getProductList(frId, cookie, authHeader) {
 
-    let sample = await axios.get(`https://dev-cms.nextpay.co.kr/menu/v1/getProductList?frId=${frId}`, {
+    let sample = await axios.get(`${CMS_API}/menu/v1/getProductList?frId=${frId}`, {
         headers: {
             Authorization: authHeader, // 그대로 전달
             Cookie: cookie,      // 문자열로 변환 후 전달
@@ -70,7 +71,7 @@ async function postMenuTranslationList(frId, body, cookie, authHeader) {
         frId: frId
     }));
 
-    let result = await axios.post(`https://dev-cms.nextpay.co.kr/menu/v1/saveMenuTranslationList`, bodyWithFrId,
+    let result = await axios.post(`${CMS_API}/menu/v1/saveMenuTranslationList`, bodyWithFrId,
         {
             headers: {
                 "Authorization": authHeader, // 그대로 전달
@@ -88,7 +89,7 @@ async function postCategoryTranslationList(frId, body, cookie, authHeader) {
         frId: frId
     }));
 
-    let result = await axios.post(`https://dev-cms.nextpay.co.kr/menu/v1/saveCategoryTranslationList`, bodyWithFrId,
+    let result = await axios.post(`${CMS_API}/menu/v1/saveCategoryTranslationList`, bodyWithFrId,
         {
             headers: {
                 "Authorization": authHeader, // 그대로 전달
@@ -106,7 +107,7 @@ async function postProductTranslationList(frId, body, cookie, authHeader) {
         frId: frId
     }));
 
-    let result = await axios.post(`https://dev-cms.nextpay.co.kr/menu/v1/saveProductTranslationList`, bodyWithFrId,
+    let result = await axios.post(`${CMS_API}/menu/v1/saveProductTranslationList`, bodyWithFrId,
         {
             headers: {
                 "Authorization": authHeader, // 그대로 전달
