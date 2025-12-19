@@ -3,7 +3,7 @@ import { APIError } from "../model/apiResponseModel.js";
 // 에러핸들러
 const errorHendler = (error, req, res, next) => {
 
-  console.log("\n",error.stack,"\n");
+  // console.log("\n",error.stack,"\n");
   // ---- error리턴은 cors 전체 허용 ----
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");

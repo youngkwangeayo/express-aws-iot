@@ -8,6 +8,7 @@ import translatorAgentService from "../service/translator-agent.service.js";
 import { APIError, APIResopnse } from "../model/apiResponseModel.js";
 import { SSEChunk, SSEHeader } from "../model/sseChunkModel.js";
 import { ChunkedStreamHeader, ChunkResponse } from "../model/chunkStreamModel.js";
+import cmsWebClient from "../webclient/cms/cms.client.js";
 
 
 const translatorAgentRouter = Router();
@@ -21,8 +22,24 @@ translatorAgentRouter.get('/health', (req, res) => {
 
 });
 
-translatorAgentRouter.post('/test-post', (req, res) => {
+translatorAgentRouter.post('/test-post', async (req, res) => {
     // throw APIError.build().setStatusCode(501).setMessage("Not Implemented");
+
+    
+    await cmsWebClient.getMenuList("10107");
+    
+
+    const startTime = Date.now();
+    let isDone = false;
+
+    while (!isDone) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        const elapsedTime = Date.now() - startTime;
+        if (elapsedTime < 7000) continue;
+        if (isDone) continue;
+        isDone = true;
+    };
+
     let test = new APIResopnse();
     res.json(test);
 });

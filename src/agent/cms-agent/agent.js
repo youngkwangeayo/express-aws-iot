@@ -3,6 +3,7 @@ import { MENU_TRANSLATION_PROMPT } from "./prompt.js";
 import { debug } from "../../config/logger.js";
 import fs from "fs/promises";
 import path from "path";
+import { APIError } from "../../model/apiResponseModel.js";
 
 /*
 모델명	설명
@@ -35,20 +36,24 @@ class CMSagent {
 
     async translateJSON(originalJson = "", lang) {
         debug(JSON.stringify(originalJson).substring(0, 30), lang);
-
-        const response = await this.#client.responses.create({
-            model: "gpt-4.1",
-            instructions: MENU_TRANSLATION_PROMPT,
-            temperature: 0,
-            input: [
-                { role: "user", content: `Translate this JSON to ${lang}:` },
-                { role: "user", content: JSON.stringify(originalJson, null, 2) }
-            ]
-
-        });
-        debug("AGENT RETUEN : ", JSON.stringify(response.output_text).substring(0, 30), typeof (response.output_text).substring(0, 30));
-
-        if (response.error) throw new Error("일단 에이전트 에러");
+        
+        let response;
+        try {
+            response = await this.#client.responses.create({
+                model: "gpt-4.1",
+                instructions: MENU_TRANSLATION_PROMPT,
+                temperature: 0,
+                input: [
+                    { role: "user", content: `Translate this JSON to ${lang}:` },
+                    { role: "user", content: JSON.stringify(originalJson, null, 2) }
+                ]
+    
+            });
+            debug("AGENT RETUEN : ", JSON.stringify(response.output_text).substring(0, 30), typeof (response.output_text).substring(0, 30));
+        } catch (error) {
+            throw new APIError().setStatusCode(error.status).setMessage(`Agent ERROR : ${error.message}`);
+        };
+        if (response.error) throw new APIError().setStatusCode(error.status).setMessage(`Agent ERROR : ${error.message}`);
 
         const result = JSON.parse(response.output_text);
         return result;
@@ -56,7 +61,7 @@ class CMSagent {
 
 
     translateJSONStream = async function (originalJson = "", lang) {
-
+        throw new Error("미구현");
         const response = await this.#client.responses.create({
             model: "gpt-4.1",
             instructions: MENU_TRANSLATION_PROMPT,
