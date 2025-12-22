@@ -37,7 +37,7 @@ async function runTranslateMenuProcess(frId, lang, cookie, authHeader, resWrite)
 
         translateMenu(frId, lang, cookie, authHeader, resWrite).then(() => { success.push("메뉴") }).catch((error) => { failMessage.push(`메뉴실패 ${error.message}`); }),
         translateCategory(frId, lang, cookie, authHeader, resWrite).then(() => { success.push("카테고리") }).catch(() => { failMessage.push(`카테고리 실패 ${error.message}`); }),
-        translateProduct2(frId, lang, cookie, authHeader, resWrite).then(() => { success.push("상품") }).catch(() => { failMessage.push(`상품 실패 ${error.message}`); }),
+        translateProduct(frId, lang, cookie, authHeader, resWrite).then(() => { success.push("상품") }).catch(() => { failMessage.push(`상품 실패 ${error.message}`); }),
 
     ]).then(() => {
         // isDone = true; // 모든 작업이 완료되면 isDone을 true로 설정
@@ -111,17 +111,7 @@ async function translateCategory(frId, lang, cookie, authHeader, resWrite) {
     debug("===translateCategory DONE ");
 };
 
-
-
-const translatorAgentService = {
-    testStream,
-    runTranslateMenuProcess,
-};
-
-export default translatorAgentService;
-
-
-async function translateProduct2(frId, lang, cookie, authHeader, resWrite) {
+async function translateProduct(frId, lang, cookie, authHeader, resWrite) {
     debug("===translateProduct START ");
 
     resWrite("CMS에서 상품 API 조회 합니다.");
@@ -148,6 +138,16 @@ async function translateProduct2(frId, lang, cookie, authHeader, resWrite) {
 
     debug("===translateProduct DONE ");
 };
+
+
+const translatorAgentService = {
+    testStream,
+    runTranslateMenuProcess,
+};
+
+export default translatorAgentService;
+
+
 
 
 // =======================================================

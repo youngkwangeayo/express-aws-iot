@@ -47,12 +47,12 @@ const logger = winston.createLogger({
   transports: [
     // ERROR 로그 - 파일에 기록
     new winston.transports.File({
-      filename: path.join(logDir, 'logs', 'error', `${getDateString()}-error.log`),
+      filename: path.join(logDir, 'logs/agnet', 'error', `${getDateString()}-error.log`),
       level: 'error'
     }),
     // INFO 로그 - 파일에 기록
     new winston.transports.File({
-      filename: path.join(logDir, 'logs', 'combined', `${getDateString()}-info.log`),
+      filename: path.join(logDir, 'logs/agnet', 'combined', `${getDateString()}-info.log`),
       level: 'info'
     })
   ]
