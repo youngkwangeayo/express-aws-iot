@@ -1,35 +1,35 @@
-# Node.js 공식 이미지 사용 (Alpine 버전으로 경량화)
-FROM node:20-alpine
+# ========================
+# Stage 1: deps
+# ========================
+FROM node:22-slim AS deps
 
-# 작업 디렉토리 설정
-WORKDIR /app
+WORKDIR /agent
 
-# package.json과 package-lock.json 복사 (캐싱 최적화)
-# COPY package*.json ./
-# 소스 코드 복사
-COPY ./ ./
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev --no-audit --no-fund
+
+# ========================
+# Stage 2: runtime
+# ========================
+FROM node:22-slim AS runtime
+
+WORKDIR /agent
 
 RUN apk add --no-cache dumb-init curl ca-certificates openssl
-# 의존성 설치
-# RUN npm ci --only=production
-RUN npm install
 
+# 로그 디렉토리 생성 (root 시점)
+RUN mkdir -p /agent/logs/agent
 
-# 로그 디렉토리 생성
-RUN mkdir -p logs
+# dependencies
+COPY --from=deps /agent/node_modules ./node_modules
 
-# certificate 권한 설정
-RUN chmod 600 src/certificate/* && \
-    chmod 644 src/certificate/AmazonRootCA1.pem
+# app source
+COPY src ./src
+COPY package.json package-lock.json ./
 
-# node 사용자에게 디렉토리 권한 부여
-RUN chown -R node:node /app
-
-# node 사용자로 전환
+# 권한 정리 (node 실행 대비)
+RUN chown -R node:node /agent
 USER node
-
-# # 포트 3000 노출
-# EXPOSE 3000
 
 # 애플리케이션 시작
 ENTRYPOINT ["dumb-init", "--"]

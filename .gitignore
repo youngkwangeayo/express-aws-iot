@@ -118,7 +118,7 @@ temp/
 ehthumbs.db
 Thumbs.db
 
-package-lock.json
+# package-lock.json
 CLAUDE.md
 
 src/certificate/*
