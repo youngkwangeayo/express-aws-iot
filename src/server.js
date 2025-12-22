@@ -12,7 +12,7 @@ import cmsAgent from './agent/cms-agent/agent.js';
 
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
 // CORS 설정 - 특정 도메인만 허용하는 경우
 // const corsOptions = {
