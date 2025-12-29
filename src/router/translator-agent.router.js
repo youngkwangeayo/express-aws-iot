@@ -6,8 +6,6 @@ import { validateMenuListTranslation, validateMenuTranslation } from "../validat
 import translatorAgentService from "../service/translator-agent.service.js";
 
 import { APIError, APIResopnse } from "../model/apiResponseModel.js";
-import { SSEChunk, SSEHeader } from "../model/sseChunkModel.js";
-import { ChunkedStreamHeader, ChunkResponse } from "../model/chunkStreamModel.js";
 import cmsWebClient from "../webclient/cms/cms.client.js";
 
 
@@ -24,9 +22,14 @@ translatorAgentRouter.get('/health', (req, res) => {
 
 translatorAgentRouter.post('/test-post', async (req, res) => {
     // throw APIError.build().setStatusCode(501).setMessage("Not Implemented");
+    const response = APIResopnse.build().setRes(res);
 
-    
-    await cmsWebClient.getMenuList("10107");
+    const data = {hello : "world"};
+    response.send(data);
+});
+translatorAgentRouter.post('/test-post', async (req, res) => {
+    // throw APIError.build().setStatusCode(501).setMessage("Not Implemented");
+
     
 
     const startTime = Date.now();
@@ -44,79 +47,6 @@ translatorAgentRouter.post('/test-post', async (req, res) => {
     res.json(test);
 });
 
-
-
-// =======================================================
-//          Stream API. 추후 파일 따로분리
-// =======================================================
-translatorAgentRouter.post('/menu-translation', validateMenuListTranslation, async (req, res) => {
-    throw APIError.build().setStatusCode(501).setMessage("Not Implemented");
-    const cookie = req.headers.cookie;
-    const authHeader = req.headers.authorization;
-
-    debug(req.matchedData);
-
-    ChunkedStreamHeader.setHeaders(res);
-    const streamChunk = ChunkResponse.build(res);
-    streamChunk.resWrite("언어 번역을 시작합니다.");
-
-    try {
-        await translatorAgentService.runTranslateMenuProcess(req.matchedData.frId, req.matchedData.lang, cookie, authHeader, streamChunk.resWrite);
-    } catch (error) {
-        debug(error);
-        return streamChunk.resError(error.message);
-    };
-    return streamChunk.resEnd();
-});
-
-
-/**
- *  Stream Chunk
- */
-translatorAgentRouter.post('/menu-translation/:lang', validateMenuTranslation, async (req, res,) => {
-    const cookie = req.headers.cookie;
-    const authHeader = req.headers.authorization;
-
-    debug(req.matchedData);
-
-    ChunkedStreamHeader.setHeaders(res);
-    const streamChunk = ChunkResponse.build(res);
-    
-    streamChunk.resWrite("언어 번역을 시작합니다.");
-    try {
-        await translatorAgentService.runTranslateMenuProcess(req.matchedData.frId, req.matchedData.lang, cookie, authHeader, streamChunk.resWrite);
-    } catch (error) {
-        debug(error);
-        return streamChunk.resError(error.message);
-    };
-    return streamChunk.resEnd();
-});
-
-
-translatorAgentRouter.post("/test-sse", async (req, res) => {
-    res.setHeader("Content-Type", "text/event-stream");
-    res.setHeader("Cache-Control", "no-cache");
-    res.setHeader("Connection", "keep-alive");
-    res.flushHeaders();
-
-    try {
-        debug("SSE 테스트 엔드포인트 시작");
-
-        // testStream 서비스를 사용하여 500ms 간격으로 스트리밍
-        const stream = translatorAgentService.testStream();
-
-        for await (const chunk of stream) res.write(`data: ${chunk}\n\n`);
-
-        // 완료 메시지 전송
-        res.write(`data: [DONE]\n\n`);
-        logger.info("SSE 테스트 엔드포인트 완료");
-        res.end();
-    } catch (err) {
-        logger.error(`SSE 테스트 엔드포인트 에러: ${err.message}`);
-        res.write(`data: ${JSON.stringify({ type: "error", message: err.message })}\n\n`);
-        res.end();
-    }
-});
 
 
 export default translatorAgentRouter;

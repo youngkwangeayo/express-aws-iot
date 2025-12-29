@@ -17,6 +17,9 @@ const validateMenuTranslation = [
     body("frId")
         .isInt().withMessage("frId is required. must be an integer")
         .toInt(),
+    body("overwrite")
+        .optional()
+        .isBoolean().withMessage("overwrite Boolean 타입입니다."),
     param("lang")
         .isString().withMessage("lang must be a string")
         .isIn(allowLang).withMessage(`lang must be either ${allowLang}`),

@@ -2,6 +2,7 @@ import winston from 'winston';
 import path from 'path';
 
 const logDir = process.env.LOG_DIR || process.cwd();
+const logLevel = process.env.LOG_LEVEL || "debug"
 
 // 현재 날짜를 YYYY-MM-DD 형식으로 가져오기
 const getDateString = () => {
@@ -14,13 +15,12 @@ const safeStringify = (obj) => {
   const seen = new WeakSet();
   return JSON.stringify(obj, (key, value) => {
     if (typeof value === 'object' && value !== null) {
-      if (seen.has(value)) {
-        return '[Circular]';
-      }
+      if (seen.has(value)) return '[Circular]';
       seen.add(value);
     }
     return value;
-  }, 2);
+  // }, 2);
+  });
 };
 
 // 여러 인자를 하나의 문자열로 합치는 헬퍼 함수
@@ -37,7 +37,7 @@ const customFormat = winston.format.printf(({ level, timestamp, message }) => {
 });
 
 const logger = winston.createLogger({
-  level: 'debug',
+  level: logLevel,
   format: winston.format.combine(
     winston.format.timestamp({
       format: 'YYYY-MM-DD HH:mm:ss'
@@ -47,12 +47,12 @@ const logger = winston.createLogger({
   transports: [
     // ERROR 로그 - 파일에 기록
     new winston.transports.File({
-      filename: path.join(logDir, 'logs/agnet', 'error', `${getDateString()}-error.log`),
+      filename: path.join(logDir, 'logs/agent', 'error', `${getDateString()}-error.log`),
       level: 'error'
     }),
     // INFO 로그 - 파일에 기록
     new winston.transports.File({
-      filename: path.join(logDir, 'logs/agnet', 'combined', `${getDateString()}-info.log`),
+      filename: path.join(logDir, 'logs/agent', 'combined', `${getDateString()}-info.log`),
       level: 'info'
     })
   ]

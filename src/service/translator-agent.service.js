@@ -27,35 +27,18 @@ async function* testStream() {
 
 
 
-async function runTranslateMenuProcess(frId, lang, cookie, authHeader, resWrite) {
-    const startTime = Date.now();
+async function runTranslateMenuProcess(frId, lang, overwrite, cookie, authHeader, resWrite) {
     const success = [];
     const failMessage = [];
 
     // 번역 작업들을 먼저 시작 (병렬 실행)
     const tasksPromise = Promise.allSettled([
 
-        translateMenu(frId, lang, cookie, authHeader, resWrite).then(() => { success.push("메뉴") }).catch((error) => { failMessage.push(`메뉴실패 ${error.message}`); }),
-        translateCategory(frId, lang, cookie, authHeader, resWrite).then(() => { success.push("카테고리") }).catch(() => { failMessage.push(`카테고리 실패 ${error.message}`); }),
-        translateProduct(frId, lang, cookie, authHeader, resWrite).then(() => { success.push("상품") }).catch(() => { failMessage.push(`상품 실패 ${error.message}`); }),
-
-    ]).then(() => {
-        // isDone = true; // 모든 작업이 완료되면 isDone을 true로 설정
-    });
-
-    // const words = ['AI가', '상품 번역', '작업 중', '입니다'];
-    // let wordIndex = 0;
-    // let isDone = false;
-    // // 작업이 진행되는 동안 진행 상황 메시지 출력
-    // while (!isDone) {
-    //     await new Promise(resolve => setTimeout(resolve, 1000));
-    //     const elapsedTime = Date.now() - startTime;
-    //     if (elapsedTime < 7000) continue;
-    //     if (isDone) continue;
-    //     wordIndex = (wordIndex % words.length) + 1;
-    //     const message = words.slice(0, wordIndex).join(' ');
-    //     resWrite(message);
-    // }
+        translateMenu(frId, lang, overwrite, cookie, authHeader, resWrite).then(() => { success.push("메뉴") }).catch((error) => { failMessage.push(`메뉴실패 ${error.message}`); }),
+        translateCategory(frId, lang, overwrite, cookie, authHeader, resWrite).then(() => { success.push("카테고리") }).catch((error) => { failMessage.push(`카테고리 실패 ${error.message}`); }),
+        translateProduct(frId, lang, overwrite, cookie, authHeader, resWrite).then(() => { success.push("상품") }).catch((error) => { failMessage.push(`상품 실패 ${error.message}`); }),
+        translateOptionGroup(frId, lang, overwrite, cookie, authHeader, resWrite).then(() => { success.push("옵션그룹") }).catch((error) => { failMessage.push(`옵션그룹 실패 ${error.message}`); }),
+    ]);
 
     // 작업이 모두 완료될 때까지 대기 (혹시 모를 race condition 방지)
     await tasksPromise;
@@ -68,11 +51,34 @@ async function runTranslateMenuProcess(frId, lang, cookie, authHeader, resWrite)
 
 
 
-async function translateMenu(frId, lang, cookie, authHeader, resWrite) {
+const translatorAgentService = {
+    testStream,
+    runTranslateMenuProcess,
+};
+
+export default translatorAgentService;
+
+
+
+
+// ==============================================================================================================
+// ==================                PRAVITE METHOD                         =====================================
+// ==============================================================================================================
+
+
+async function translateMenu(frId, lang, overwrite, cookie, authHeader, resWrite) {
     debug("===translateMenu START ");
 
     resWrite("CMS에서 메뉴 API 조회 합니다.");
-    const taskResult_menu = await cmsWebClient.getMenuList(frId, lang, cookie, authHeader);
+    let taskResult_menu = await cmsWebClient.getMenuList(frId, cookie, authHeader);
+
+    if (!overwrite) {
+        const originTranslation = await cmsWebClient.getTranslationMenu(frId, lang, cookie, authHeader);
+        const existingIds = new Set(originTranslation.map(item => item.menuId));
+        taskResult_menu = taskResult_menu.filter(menu => !existingIds.has(menu.menuId));
+    };
+
+    if (taskResult_menu.length <= 0) return;
 
     resWrite("AI가 메뉴 번역 시작합니다.");
     const taskResoult_transMenu = await cmsAgent.translateJSON(taskResult_menu, lang);
@@ -84,14 +90,21 @@ async function translateMenu(frId, lang, cookie, authHeader, resWrite) {
     debug("===translateMenu DONE ");
 };
 
-async function translateCategory(frId, lang, cookie, authHeader, resWrite) {
+async function translateCategory(frId, lang, overwrite, cookie, authHeader, resWrite) {
     debug("===translateCategory STRAT ");
 
     resWrite("CMS에서 카테고리 API 조회 합니다.");
-    const taskResult_category = await cmsWebClient.getCategoryList(frId, lang, cookie, authHeader);
+    let taskResult_category = await cmsWebClient.getCategoryList(frId, cookie, authHeader);
+
+    if (!overwrite) {
+        const originTranslation = await cmsWebClient.getTranslationCategory(frId, lang, cookie, authHeader);
+        const existingIds = new Set(originTranslation.map(item => item.categoryId));
+        taskResult_category = taskResult_category.filter(category => !existingIds.has(category.categoryId));
+    };
+
+    if (taskResult_category.length <= 0) return;
 
     resWrite("AI가 카테고리 번역 시작합니다.");
-
     // 50개씩 나눠서 병렬로 번역 실행
     const taskResoult_transCategory = await parallelTaskRun(
         taskResult_category,
@@ -111,14 +124,21 @@ async function translateCategory(frId, lang, cookie, authHeader, resWrite) {
     debug("===translateCategory DONE ");
 };
 
-async function translateProduct(frId, lang, cookie, authHeader, resWrite) {
+async function translateProduct(frId, lang, overwrite, cookie, authHeader, resWrite) {
     debug("===translateProduct START ");
 
     resWrite("CMS에서 상품 API 조회 합니다.");
-    const taskResult_product = await cmsWebClient.getProductList(frId, lang, cookie, authHeader);
+    let taskResult_product = await cmsWebClient.getProductList(frId, cookie, authHeader);
+
+    if (!overwrite) {
+        const originTranslation = await cmsWebClient.getTranslationProduct(frId, lang, cookie, authHeader);
+        const existingIds = new Set(originTranslation.map(item => item.productId));
+        taskResult_product = taskResult_product.filter(product => !existingIds.has(product.productId));
+    };
+    
+    if (taskResult_product.length <= 0) return;
 
     resWrite("AI가 상품 번역 시작합니다.");
-
     // 50개씩 나눠서 병렬로 번역 실행
     const taskResoult_transProduct = await parallelTaskRun(
         taskResult_product,
@@ -131,7 +151,7 @@ async function translateProduct(frId, lang, cookie, authHeader, resWrite) {
     );
 
     resWrite("AI가 상품 번역을 완료 하였습니다.");
-    
+
     resWrite("CMS에서 상품 저장 요청 합니다.");
     const taskResult_SaveProductResult = await cmsWebClient.postProductTranslationList(frId, taskResoult_transProduct, cookie, authHeader);
     resWrite("CMS에서 상품 저장 완료.");
@@ -139,20 +159,42 @@ async function translateProduct(frId, lang, cookie, authHeader, resWrite) {
     debug("===translateProduct DONE ");
 };
 
+async function translateOptionGroup(frId, lang, overwrite, cookie, authHeader, resWrite) {
+    debug("===translateProduct START ");
 
-const translatorAgentService = {
-    testStream,
-    runTranslateMenuProcess,
+    resWrite("CMS에서 옵션그룹 API 조회 합니다.");
+    let taskResult_optionGroup = await cmsWebClient.getOptionGroupList(frId, cookie, authHeader);
+
+
+    if (!overwrite) {
+        const originTranslation = await cmsWebClient.getTranslationOptionGroup(frId, lang, cookie, authHeader);
+        const existingIds = new Set(originTranslation.map(item => item.optionGroupId));
+        taskResult_optionGroup = taskResult_optionGroup.filter(optionGroup => !existingIds.has(optionGroup.optionGroupId));
+    };
+
+    if (taskResult_optionGroup.length <= 0) return;
+
+    resWrite("AI가 옵션그룹 번역 시작합니다.");
+    // 50개씩 나눠서 병렬로 번역 실행
+    const taskResoult_transProduct = await parallelTaskRun(
+        taskResult_optionGroup,
+        50,
+        (chunk) => cmsAgent.translateJSON(chunk, lang),
+        (total) => {
+            debug(`옵션그룹 번역 완료 (${total}/${taskResult_optionGroup.length})`);
+            resWrite(`옵션그룹 번역 완료 (${total}/${taskResult_optionGroup.length})`);
+        }
+    );
+
+    resWrite("AI가 옵션그룹 번역을 완료 하였습니다.");
+
+    resWrite("CMS에서 옵션그룹 저장 요청 합니다.");
+    const taskResult_SaveProductResult = await cmsWebClient.postOptionGroupTranslationList(frId, taskResoult_transProduct, cookie, authHeader);
+    resWrite("CMS에서 옵션그룹 저장 완료.");
+
+    debug("===translateProduct DONE ");
 };
 
-export default translatorAgentService;
-
-
-
-
-// =======================================================
-// ==================PRAVITE METHOD=======================
-// =======================================================
 
 /**
  * 어레이를 사이즈만큼 잘라서 2중 배열로 리턴함.
@@ -188,7 +230,7 @@ async function parallelTaskRun(items, chunkSize, taskFunction, progressCallback)
             const taskResoult = await taskFunction(chunk);
             successLangth += taskResoult.length
             if (progressCallback) {
-                progressCallback( successLangth );
+                progressCallback(successLangth);
             }
             return taskResoult;
         })
@@ -196,3 +238,4 @@ async function parallelTaskRun(items, chunkSize, taskFunction, progressCallback)
 
     return results.flat();
 };
+

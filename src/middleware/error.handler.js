@@ -10,7 +10,7 @@ const errorHendler = (error, req, res, next) => {
   res.header("Access-Control-Allow-Methods", "GET,HEAD,PUT,PATCH,POST,DELETE");
   // -------------------------------
 
-  console.log(`[ERROR] [${res.locals.requestId}] ${JSON.stringify(error.stack)}`);
+  console.log(`[ERROR] [${res.locals.requestId}] ${error.stack}`);
 
   const apiError = APIError.build().setStatusCode(error.statusCode || 500).setMessage(error.message || '처리 중 에러가 발생했습니다.');
   res.statusCode = apiError.statusCode;

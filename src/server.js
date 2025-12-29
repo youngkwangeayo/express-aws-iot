@@ -4,11 +4,12 @@ import express from 'express';
 import cors from 'cors';
 import logger  from './config/logger.js';
 import systemRouter from './router/system.router.js';
-import errorHendler from './middleware/error.hanlder.js';
+import errorHendler from './middleware/error.handler.js';
 import loggingMiddleware from './middleware/logging.middleware.js';
 import OPENAI from './config/openai.js';
 import translatorAgentRouter from './router/translator-agent.router.js';
 import cmsAgent from './agent/cms-agent/agent.js';
+import translatorAgentStreamRouter from './router/translator-agent.stream.router.js';
 
 
 const app = express();
@@ -38,9 +39,10 @@ app.use(cors());
 
 app.use(express.json());
 
-app.use(loggingMiddleware);
-
 app.use(systemRouter);
+
+app.use(loggingMiddleware);
+app.use("/translator-agent/stream",translatorAgentStreamRouter)//translator-agent
 app.use("/translator-agent",translatorAgentRouter)//translator-agent
 app.use(errorHendler);
 
