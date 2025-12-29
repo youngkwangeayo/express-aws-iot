@@ -2,7 +2,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import logger  from './config/logger.js';
+import logger from './config/logger.js';
 import systemRouter from './router/system.router.js';
 import errorHendler from './middleware/error.handler.js';
 import loggingMiddleware from './middleware/logging.middleware.js';
@@ -10,6 +10,8 @@ import OPENAI from './config/openai.js';
 import translatorAgentRouter from './router/translator-agent.router.js';
 import cmsAgent from './agent/cms-agent/agent.js';
 import translatorAgentStreamRouter from './router/translator-agent.stream.router.js';
+import PerfMonitor from './config/perf-monitor.js';
+
 
 
 const app = express();
@@ -42,21 +44,24 @@ app.use(express.json());
 app.use(systemRouter);
 
 app.use(loggingMiddleware);
-app.use("/translator-agent/stream",translatorAgentStreamRouter)//translator-agent
-app.use("/translator-agent",translatorAgentRouter)//translator-agent
+app.use("/translator-agent/stream", translatorAgentStreamRouter)//translator-agent
+app.use("/translator-agent", translatorAgentRouter)//translator-agent
 app.use(errorHendler);
 
 
 const bootStrep = async () => {
   try {
     logger.info('부트스트랩 시작 - 초기화 작업 실행 중...');
+    const perf = new PerfMonitor({
+      enableHeapSnapshot: false,      // 필요 시만
+      enableCpuProfile: false,       // 평소엔 끄기
+      logIntervalMs: 5000
+    });
 
     // 여러 init 함수들을 병렬로 실행
     await Promise.all([
-      cmsAgent.init()
-      // OPENAI.init(),
-      // otherService.init(),
-      // anotherService.init(),
+      cmsAgent.init(),
+      perf.start()
     ]);
     logger.info('모든 초기화 작업 완료');
 
