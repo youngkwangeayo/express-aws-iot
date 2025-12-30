@@ -36,7 +36,7 @@ class CMSagent {
 
     async translateJSON(originalJson = "", lang) {
         debug(JSON.stringify(originalJson).substring(0, 30), lang);
-        
+
         let response;
         try {
             response = await this.#client.responses.create({
@@ -47,7 +47,7 @@ class CMSagent {
                     { role: "user", content: `Translate this JSON to ${lang}:` },
                     { role: "user", content: JSON.stringify(originalJson, null, 2) }
                 ]
-    
+
             });
             debug("AGENT RETUEN : ", JSON.stringify(response.output_text).substring(0, 30), typeof (response.output_text).substring(0, 30));
         } catch (error) {
@@ -59,6 +59,29 @@ class CMSagent {
         return result;
     };
 
+    async translateFileTEXT(fileText = "", lang) {
+        console.log('[cms-agent] translateJSON input:', fileText.substring(0, 30), lang);
+
+        let response;
+        try {
+            response = await this.#client.responses.create({
+                model: "gpt-4.1",
+                instructions: FILE_TEXT_TRANSLATION_PROMPT,
+                temperature: 0,
+                input: [
+                    { role: "user", content: `Translate this JSON to ${lang}:` },
+                    { role: "user", content: fileText }
+                ]
+
+            });
+            console.log('[cms-agent] AGENT RETURN:', response.output_text.substring(0, 30));
+        } catch (error) {
+            throw APIError.build().setStatusCode(error.status).setMsg(`Agent ERROR : ${error.message}`);
+        };
+        if (response.error) throw APIError.build().setStatusCode(error.status).setMsg(`Agent ERROR : ${error.message}`);
+
+        return response.output_text;
+    };
 
     translateJSONStream = async function (originalJson = "", lang) {
         throw new Error("미구현");
@@ -93,7 +116,7 @@ class CMSagent {
         }
 
         debug("Stream output saved to:", filePath);
-        fs.appendFile(path.join(outputDir, `res.txt`),fullText,"utf-8");
+        fs.appendFile(path.join(outputDir, `res.txt`), fullText, "utf-8");
         return fullText;
     };
 
