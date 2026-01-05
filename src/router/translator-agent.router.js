@@ -47,7 +47,27 @@ translatorAgentRouter.post('/test-post', async (req, res) => {
     res.json(test);
 });
 
+/*
+//테스트용 가져온것
+translatorAgentRouter.get("/system/dynamic/:locale", validateLocale, async (req, res, next) => {
+    const lang = req.matchedData["locale"];
 
+    const filePath = await translationModel.getSystemDynamicLangFile(lang);
+    res.type('application/json')
+        .set("Content-Disposition", `inline; filename="${lang}.js`)
+        .send(filePath);
+});
+// 테스트용 가져온것 
+translatorAgentRouter.get("/system/static/:locale", validateLocale, async (req, res, next) => {
+    const lang = req.matchedData["locale"];
+
+    const filePath = await translationModel.getSystemStaticLangFile(lang);
+
+    res.type('application/javascript')
+        .set("Content-Disposition", `inline; filename="${lang}.js`)
+        .send(filePath);
+});
+*/
 
 export default translatorAgentRouter;
 

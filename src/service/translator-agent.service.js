@@ -239,3 +239,61 @@ async function parallelTaskRun(items, chunkSize, taskFunction, progressCallback)
     return results.flat();
 };
 
+
+
+
+/*
+테스트용 가져온것
+
+
+const getSystemStaticLangFile = async (lang) => {
+
+  const filePath = path.join(__dirname, "../public/assets/app/language");
+
+  const defaultTextFile = fs.readFileSync(`${filePath}/ko.js`, 'utf8');
+  const targetTextFile = fs.existsSync(`${filePath}/${lang}.js`) ? fs.readFileSync(`${filePath}/${lang}.js`, 'utf8') : "{}";
+
+  const defaultData = parseJsFile(defaultTextFile);
+  const targetData = parseJsFile(targetTextFile);
+
+
+
+  const targetKeys = {};
+  for (const key in defaultData) if (!(key in targetData)) targetKeys[key] = defaultData[key];
+
+  if (Object.keys(targetKeys).length === 0) return targetTextFile;
+
+  console.log(`번역할 키 개수: ${Object.keys(targetKeys).length}`);
+
+  const translatedData = await cmsAgent.translateFileTEXT( toJsObjectString(targetKeys) );
+
+  const mergedData = { ...targetData, ...parseJsFile(translatedData) };
+
+  // 7. export default 형식으로 변환
+  const resultFileContent = `export default ${toJsObjectString(mergedData)}`;
+
+  return resultFileContent;
+};
+
+
+function toJsObjectString(obj, indent = 2) {
+  const space = ' '.repeat(indent);
+
+  const entries = Object.entries(obj).map(
+    ([key, value]) => `${space}${key}: ${JSON.stringify(value)},`
+  );
+
+  return `{\n${entries.join('\n')}\n}`;
+};
+
+*/
+//  테스트용
+// /**
+//  * !주의 사용자 입력 받지마시오! .js 파일 내용을 파싱하여 객체로 변환 
+//  * @param {string} fileContent - 파일 내용
+//  * @returns {Object} 파싱된 객체
+//  */
+// function parseJsFile(fileContent) {
+//   const objectString = fileContent.replace(/export\s+default\s+/, '').trim();
+//   return new Function('return ' + objectString)();
+// };

@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { MENU_TRANSLATION_PROMPT } from "./prompt.js";
+import { FILE_TEXT_TRANSLATION_PROMPT, MENU_TRANSLATION_PROMPT } from "./prompt.js";
 import { debug } from "../../config/logger.js";
 import fs from "fs/promises";
 import path from "path";
@@ -60,7 +60,7 @@ class CMSagent {
     };
 
     async translateFileTEXT(fileText = "", lang) {
-        console.log('[cms-agent] translateJSON input:', fileText.substring(0, 30), lang);
+        // console.log('[cms-agent] translateJSON input:', fileText.substring(0, 30), lang);
 
         let response;
         try {
